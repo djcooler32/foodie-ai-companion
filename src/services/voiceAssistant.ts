@@ -1,7 +1,4 @@
 
-import { SpeechRecognition } from '@capacitor/speech-recognition';
-import { TextToSpeech } from '@capacitor/text-to-speech';
-
 export interface VoiceCommand {
   intent: string;
   entities: Record<string, string>;
@@ -10,52 +7,82 @@ export interface VoiceCommand {
 
 export class VoiceAssistantService {
   private isListening = false;
+  private recognition: SpeechRecognition | null = null;
+  private synthesis: SpeechSynthesis | null = null;
 
   async initialize() {
     try {
-      const permission = await SpeechRecognition.requestPermissions();
-      if (permission.speechRecognition === 'granted') {
-        console.log('Speech recognition permission granted');
-        return true;
+      // Check if Web Speech API is available
+      if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        this.recognition = new SpeechRecognition();
+        this.recognition.continuous = false;
+        this.recognition.interimResults = false;
+        this.recognition.lang = 'en-US';
+        console.log('Speech recognition initialized');
       }
+
+      if ('speechSynthesis' in window) {
+        this.synthesis = window.speechSynthesis;
+        console.log('Speech synthesis initialized');
+      }
+
+      return this.recognition !== null;
     } catch (error) {
       console.error('Failed to initialize voice assistant:', error);
+      return false;
     }
-    return false;
   }
 
   async startListening(): Promise<string> {
-    if (this.isListening) return '';
+    if (this.isListening || !this.recognition) return '';
     
-    try {
+    return new Promise((resolve) => {
       this.isListening = true;
-      const result = await SpeechRecognition.start({
-        language: 'en-US',
-        maxResults: 1,
-        prompt: 'Say something...',
-        partialResults: false,
-        popup: false,
-      });
+      
+      this.recognition!.onresult = (event) => {
+        const result = event.results[0][0].transcript;
+        this.isListening = false;
+        resolve(result);
+      };
 
-      this.isListening = false;
-      return result.matches?.[0] || '';
-    } catch (error) {
-      this.isListening = false;
-      console.error('Speech recognition error:', error);
-      return '';
-    }
+      this.recognition!.onerror = (event) => {
+        console.error('Speech recognition error:', event.error);
+        this.isListening = false;
+        resolve('');
+      };
+
+      this.recognition!.onend = () => {
+        this.isListening = false;
+      };
+
+      try {
+        this.recognition!.start();
+      } catch (error) {
+        console.error('Failed to start speech recognition:', error);
+        this.isListening = false;
+        resolve('');
+      }
+    });
   }
 
   async speak(text: string) {
+    if (!this.synthesis) {
+      console.warn('Speech synthesis not available');
+      return;
+    }
+
     try {
-      await TextToSpeech.speak({
-        text,
-        lang: 'en-US',
-        rate: 1.0,
-        pitch: 1.0,
-        volume: 1.0,
-        category: 'ambient',
-      });
+      // Cancel any ongoing speech
+      this.synthesis.cancel();
+      
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = 'en-US';
+      utterance.rate = 1.0;
+      utterance.pitch = 1.0;
+      utterance.volume = 1.0;
+      
+      this.synthesis.speak(utterance);
     } catch (error) {
       console.error('Text to speech error:', error);
     }
