@@ -1,4 +1,6 @@
 
+/// <reference path="../types/speech.d.ts" />
+
 export interface VoiceCommand {
   intent: string;
   entities: Record<string, string>;
