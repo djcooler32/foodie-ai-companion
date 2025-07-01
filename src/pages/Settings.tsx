@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowDown, Settings, User, Bell, Shield } from "lucide-react";
+import { ArrowDown, Settings as SettingsIcon, User, Bell, Shield } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Settings = () => {
@@ -52,7 +52,7 @@ const Settings = () => {
             </Button>
           </Link>
           <div className="ml-3 flex items-center space-x-3">
-            <Settings className="h-6 w-6 text-gray-700" />
+            <SettingsIcon className="h-6 w-6 text-gray-700" />
             <h1 className="text-xl font-bold text-gray-900">Settings</h1>
           </div>
         </div>
