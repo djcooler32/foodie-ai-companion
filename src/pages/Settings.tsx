@@ -1,11 +1,10 @@
-
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ArrowDown, Settings as SettingsIcon, User, Bell, Shield } from "lucide-react";
+import { ArrowDown, Settings as SettingsIcon, User, Bell, Shield, Mic } from "lucide-react";
 import { Link } from "react-router-dom";
 
 const Settings = () => {
@@ -27,6 +26,13 @@ const Settings = () => {
     soy: false,
   });
 
+  const [voiceSettings, setVoiceSettings] = useState({
+    voiceAssistant: true,
+    speechFeedback: true,
+    wakePhraseEnabled: false,
+    voiceLanguage: 'en-US'
+  });
+
   const toggleDietaryRestriction = (key: string) => {
     setDietaryRestrictions(prev => ({
       ...prev,
@@ -36,6 +42,13 @@ const Settings = () => {
 
   const toggleAllergy = (key: string) => {
     setAllergies(prev => ({
+      ...prev,
+      [key]: !prev[key as keyof typeof prev]
+    }));
+  };
+
+  const toggleVoiceSetting = (key: string) => {
+    setVoiceSettings(prev => ({
       ...prev,
       [key]: !prev[key as keyof typeof prev]
     }));
@@ -76,6 +89,57 @@ const Settings = () => {
               <div>
                 <label className="text-sm font-medium text-gray-700">Activity Level</label>
                 <p className="text-sm text-gray-600">Moderately Active</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Voice Assistant Settings */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Mic className="h-5 w-5" />
+              Voice Assistant
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Voice Commands</p>
+                <p className="text-sm text-gray-600">Enable voice control for app functions</p>
+              </div>
+              <Switch
+                checked={voiceSettings.voiceAssistant}
+                onCheckedChange={() => toggleVoiceSetting('voiceAssistant')}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Speech Feedback</p>
+                <p className="text-sm text-gray-600">Hear responses from the assistant</p>
+              </div>
+              <Switch
+                checked={voiceSettings.speechFeedback}
+                onCheckedChange={() => toggleVoiceSetting('speechFeedback')}
+              />
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">Wake Phrase</p>
+                <p className="text-sm text-gray-600">Always listen for "Hey FoodieAI"</p>
+              </div>
+              <Switch
+                checked={voiceSettings.wakePhraseEnabled}
+                onCheckedChange={() => toggleVoiceSetting('wakePhraseEnabled')}
+              />
+            </div>
+            <div className="pt-3">
+              <h4 className="font-medium mb-2">Compatible Assistants</h4>
+              <div className="flex flex-wrap gap-2">
+                <Badge variant="default">Siri Shortcuts</Badge>
+                <Badge variant="default">Google Assistant</Badge>
+                <Badge variant="default">Alexa Skills</Badge>
+                <Badge variant="secondary">Bixby (Beta)</Badge>
               </div>
             </div>
           </CardContent>

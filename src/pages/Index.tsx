@@ -3,17 +3,78 @@ import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Calendar, Camera, Clock, Plus, Utensils, BarChart3, Settings } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { 
+  Apple, 
+  ChefHat, 
+  Settings, 
+  Camera, 
+  Plus, 
+  Calendar,
+  TrendingUp,
+  AlertCircle 
+} from "lucide-react";
 import { Link } from "react-router-dom";
 import QuickScanButton from "@/components/QuickScanButton";
-import ExpiringItems from "@/components/ExpiringItems";
-import TodaysMeals from "@/components/TodaysMeals";
-import NutritionOverview from "@/components/NutritionOverview";
+import VoiceAssistantButton from "@/components/VoiceAssistantButton";
+import { useToast } from "@/hooks/use-toast";
 
 const Index = () => {
-  const [selectedTab, setSelectedTab] = useState("overview");
+  const { toast } = useToast();
+  const [inventory, setInventory] = useState([
+    { name: "Apples", quantity: 5, expiry: "3 days", category: "fruits", protein: 0, calories: 80 },
+    { name: "Chicken Breast", quantity: 2, expiry: "2 days", category: "proteins", protein: 25, calories: 165 },
+    { name: "Spinach", quantity: 1, expiry: "5 days", category: "vegetables", protein: 3, calories: 25 },
+    { name: "Greek Yogurt", quantity: 3, expiry: "7 days", category: "dairy", protein: 15, calories: 100 },
+  ]);
+
+  const handleAddFood = (food: string) => {
+    // Add food to inventory
+    const newItem = {
+      name: food,
+      quantity: 1,
+      expiry: "7 days",
+      category: "other",
+      protein: 0,
+      calories: 100
+    };
+    setInventory(prev => [...prev, newItem]);
+    toast({
+      title: "Food Added",
+      description: `${food} has been added to your inventory`,
+    });
+  };
+
+  const handleCheckExpiring = () => {
+    const expiringSoon = inventory.filter(item => 
+      parseInt(item.expiry) <= 3
+    );
+    
+    toast({
+      title: "Expiring Items",
+      description: `You have ${expiringSoon.length} items expiring soon: ${expiringSoon.map(item => item.name).join(', ')}`,
+    });
+  };
+
+  const handleSuggestMeal = (mealType: string) => {
+    const availableIngredients = inventory.map(item => item.name);
+    toast({
+      title: `${mealType.charAt(0).toUpperCase() + mealType.slice(1)} Suggestion`,
+      description: `Based on your ${availableIngredients.slice(0, 3).join(', ')}, I suggest a healthy ${mealType}!`,
+    });
+  };
+
+  const handleGroceryList = () => {
+    toast({
+      title: "Grocery List",
+      description: "Generated grocery list based on your meal plans and missing ingredients",
+    });
+  };
+
+  const totalCalories = inventory.reduce((sum, item) => sum + (item.calories * item.quantity), 0);
+  const totalProtein = inventory.reduce((sum, item) => sum + (item.protein * item.quantity), 0);
+  const expiringItems = inventory.filter(item => parseInt(item.expiry) <= 3).length;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 to-orange-50">
@@ -21,138 +82,101 @@ const Index = () => {
       <header className="bg-white shadow-sm border-b">
         <div className="px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-r from-green-500 to-orange-500 rounded-full flex items-center justify-center">
-              <Utensils className="h-6 w-6 text-white" />
-            </div>
+            <Apple className="h-8 w-8 text-green-500" />
             <div>
-              <h1 className="text-xl font-bold text-gray-900">FoodSmart</h1>
-              <p className="text-sm text-gray-500">Smart Food Management</p>
+              <h1 className="text-xl font-bold text-gray-900">FoodieAI</h1>
+              <p className="text-sm text-gray-600">Your Smart Food Companion</p>
             </div>
           </div>
-          <Link to="/settings">
-            <Button variant="ghost" size="sm">
-              <Settings className="h-5 w-5" />
-            </Button>
-          </Link>
+          <div className="flex items-center space-x-2">
+            <VoiceAssistantButton
+              onAddFood={handleAddFood}
+              onCheckExpiring={handleCheckExpiring}
+              onSuggestMeal={handleSuggestMeal}
+              onGroceryList={handleGroceryList}
+            />
+            <Link to="/settings">
+              <Button variant="ghost" size="sm">
+                <Settings className="h-5 w-5" />
+              </Button>
+            </Link>
+          </div>
         </div>
       </header>
 
-      {/* Main Content */}
-      <div className="px-4 py-6">
-        <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-          <TabsList className="grid w-full grid-cols-4 mb-6">
-            <TabsTrigger value="overview" className="text-xs">Overview</TabsTrigger>
-            <TabsTrigger value="inventory" className="text-xs">Inventory</TabsTrigger>
-            <TabsTrigger value="meals" className="text-xs">Meals</TabsTrigger>
-            <TabsTrigger value="nutrition" className="text-xs">Nutrition</TabsTrigger>
-          </TabsList>
+      <div className="px-4 py-6 space-y-6">
+        {/* Quick Stats */}
+        <div className="grid grid-cols-3 gap-4">
+          <Card className="text-center">
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-green-600">{inventory.length}</div>
+              <div className="text-sm text-gray-600">Items</div>
+            </CardContent>
+          </Card>
+          <Card className="text-center">
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-orange-600">{expiringItems}</div>
+              <div className="text-sm text-gray-600">Expiring Soon</div>
+            </CardContent>
+          </Card>
+          <Card className="text-center">
+            <CardContent className="p-4">
+              <div className="text-2xl font-bold text-blue-600">{totalCalories}</div>
+              <div className="text-sm text-gray-600">Total Calories</div>
+            </CardContent>
+          </Card>
+        </div>
 
-          <TabsContent value="overview" className="space-y-6">
-            {/* Quick Actions */}
-            <div className="grid grid-cols-2 gap-4">
-              <QuickScanButton />
-              <Link to="/meal-planner">
-                <Card className="h-full cursor-pointer hover:shadow-md transition-shadow">
-                  <CardContent className="p-4 text-center">
-                    <Utensils className="h-8 w-8 mx-auto mb-2 text-orange-500" />
-                    <p className="font-medium text-sm">Plan Meals</p>
-                    <p className="text-xs text-gray-500">AI suggestions</p>
-                  </CardContent>
-                </Card>
-              </Link>
+        {/* Quick Actions */}
+        <div className="grid grid-cols-2 gap-4">
+          <QuickScanButton />
+          <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <Link to="/meal-planner">
+              <CardContent className="p-4 text-center">
+                <ChefHat className="h-8 w-8 mx-auto mb-2 text-orange-500" />
+                <p className="font-medium text-sm">Meal Planner</p>
+                <p className="text-xs text-gray-500">AI suggestions</p>
+              </CardContent>
+            </Link>
+          </Card>
+        </div>
+
+        {/* Voice Commands Help */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-lg">Voice Commands</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-2 text-sm">
+              <p><strong>"Add [food] to inventory"</strong> - Add items to your food list</p>
+              <p><strong>"Check expiring items"</strong> - See what's expiring soon</p>
+              <p><strong>"Suggest breakfast/lunch/dinner"</strong> - Get meal ideas</p>
+              <p><strong>"Show grocery list"</strong> - View shopping recommendations</p>
             </div>
+          </CardContent>
+        </Card>
 
-            {/* Expiring Items Alert */}
-            <ExpiringItems />
-
-            {/* Today's Meals Preview */}
-            <TodaysMeals />
-
-            {/* Quick Nutrition Stats */}
-            <NutritionOverview />
-          </TabsContent>
-
-          <TabsContent value="inventory">
-            <div className="text-center py-8">
-              <Camera className="h-16 w-16 mx-auto mb-4 text-gray-400" />
-              <h3 className="text-lg font-semibold mb-2">Your Inventory</h3>
-              <p className="text-gray-600 mb-4">Scan items to build your smart inventory</p>
-              <QuickScanButton />
+        {/* Inventory Overview */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Your Inventory</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {inventory.slice(0, 4).map((item, index) => (
+                <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                  <div>
+                    <p className="font-medium">{item.name}</p>
+                    <p className="text-sm text-gray-600">Qty: {item.quantity} • Expires in {item.expiry}</p>
+                  </div>
+                  <Badge variant={parseInt(item.expiry) <= 3 ? "destructive" : "secondary"}>
+                    {parseInt(item.expiry) <= 3 ? "Urgent" : "Fresh"}
+                  </Badge>
+                </div>
+              ))}
             </div>
-          </TabsContent>
-
-          <TabsContent value="meals">
-            <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Utensils className="h-5 w-5" />
-                    Today's Meal Plan
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">Breakfast</span>
-                      <Badge variant="outline">Planned</Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">Lunch</span>
-                      <Badge variant="secondary">Suggestion Available</Badge>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="font-medium">Dinner</span>
-                      <Badge variant="outline">Not Planned</Badge>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-
-          <TabsContent value="nutrition">
-            <div className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <BarChart3 className="h-5 w-5" />
-                    Daily Nutrition Goals
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-sm font-medium">Calories</span>
-                      <span className="text-sm text-gray-600">1,200 / 2,000</span>
-                    </div>
-                    <Progress value={60} className="h-2" />
-                  </div>
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-sm font-medium">Protein</span>
-                      <span className="text-sm text-gray-600">45g / 150g</span>
-                    </div>
-                    <Progress value={30} className="h-2" />
-                  </div>
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-sm font-medium">Carbohydrates</span>
-                      <span className="text-sm text-gray-600">120g / 250g</span>
-                    </div>
-                    <Progress value={48} className="h-2" />
-                  </div>
-                  <div>
-                    <div className="flex justify-between mb-1">
-                      <span className="text-sm font-medium">Fat</span>
-                      <span className="text-sm text-gray-600">35g / 65g</span>
-                    </div>
-                    <Progress value={54} className="h-2" />
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </TabsContent>
-        </Tabs>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
