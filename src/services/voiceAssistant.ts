@@ -21,17 +21,15 @@ export class VoiceAssistantService {
         this.recognition!.continuous = false;
         this.recognition!.interimResults = false;
         this.recognition!.lang = 'en-US';
-        console.log('Speech recognition initialized');
       }
 
       if ('speechSynthesis' in window) {
         this.synthesis = window.speechSynthesis;
-        console.log('Speech synthesis initialized');
       }
 
       return this.recognition !== null;
     } catch (error) {
-      console.error('Failed to initialize voice assistant:', error);
+      // Initialization failed
       return false;
     }
   }
@@ -48,8 +46,7 @@ export class VoiceAssistantService {
         resolve(result);
       };
 
-      this.recognition!.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
+      this.recognition!.onerror = () => {
         this.isListening = false;
         resolve('');
       };
@@ -60,8 +57,7 @@ export class VoiceAssistantService {
 
       try {
         this.recognition!.start();
-      } catch (error) {
-        console.error('Failed to start speech recognition:', error);
+      } catch {
         this.isListening = false;
         resolve('');
       }
@@ -70,7 +66,6 @@ export class VoiceAssistantService {
 
   async speak(text: string) {
     if (!this.synthesis) {
-      console.warn('Speech synthesis not available');
       return;
     }
 
@@ -85,8 +80,8 @@ export class VoiceAssistantService {
       utterance.volume = 1.0;
       
       this.synthesis.speak(utterance);
-    } catch (error) {
-      console.error('Text to speech error:', error);
+    } catch {
+      // ignore speech errors
     }
   }
 

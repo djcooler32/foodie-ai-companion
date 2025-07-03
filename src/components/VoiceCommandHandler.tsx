@@ -29,7 +29,6 @@ export const VoiceCommandHandler = ({
   }, []);
 
   const handleVoiceCommand = async (command: VoiceCommand) => {
-    console.log('Processing voice command:', command);
     
     switch (command.intent) {
       case 'add_food':
@@ -74,7 +73,6 @@ export const VoiceCommandHandler = ({
     if (!text.trim()) return;
     
     const command = voiceAssistant.parseCommand(text);
-    console.log('Voice input:', text, 'Parsed command:', command);
     
     if (command.confidence > 0.5) {
       await handleVoiceCommand(command);
