@@ -38,24 +38,41 @@ export class VoiceAssistantService {
 
   async startListening(): Promise<string> {
     if (this.isListening || !this.recognition) return '';
-    
+
     return new Promise((resolve) => {
       this.isListening = true;
-      
+      let resolved = false;
+
+      const cleanup = () => {
+        if (!this.recognition) return;
+        this.recognition.onresult = null;
+        this.recognition.onerror = null;
+        this.recognition.onend = null;
+      };
+
       this.recognition!.onresult = (event) => {
         const result = event.results[0][0].transcript;
+        resolved = true;
         this.isListening = false;
+        cleanup();
         resolve(result);
       };
 
       this.recognition!.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
+        resolved = true;
         this.isListening = false;
+        cleanup();
         resolve('');
       };
 
       this.recognition!.onend = () => {
         this.isListening = false;
+        if (!resolved) {
+          resolved = true;
+          cleanup();
+          resolve('');
+        }
       };
 
       try {
@@ -63,7 +80,8 @@ export class VoiceAssistantService {
       } catch (error) {
         console.error('Failed to start speech recognition:', error);
         this.isListening = false;
-        resolve('');
+        cleanup();
+        if (!resolved) resolve('');
       }
     });
   }
