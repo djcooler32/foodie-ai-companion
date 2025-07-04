@@ -1,5 +1,5 @@
 
-/// <reference path="../types/speech.d.ts" />
+import type {} from "../types/speech"
 
 export interface VoiceCommand {
   intent: string;
@@ -16,7 +16,15 @@ export class VoiceAssistantService {
     try {
       // Check if Web Speech API is available
       if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRecognitionConstructor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        interface SpeechRecognitionWindow extends Window {
+          SpeechRecognition: typeof SpeechRecognition;
+          webkitSpeechRecognition: typeof SpeechRecognition;
+        }
+
+        const win = window as unknown as SpeechRecognitionWindow;
+
+        const SpeechRecognitionConstructor: typeof SpeechRecognition =
+          win.SpeechRecognition || win.webkitSpeechRecognition;
         this.recognition = new SpeechRecognitionConstructor();
         this.recognition!.continuous = false;
         this.recognition!.interimResults = false;
@@ -38,24 +46,41 @@ export class VoiceAssistantService {
 
   async startListening(): Promise<string> {
     if (this.isListening || !this.recognition) return '';
-    
+
     return new Promise((resolve) => {
       this.isListening = true;
-      
+      let resolved = false;
+
+      const cleanup = () => {
+        if (!this.recognition) return;
+        this.recognition.onresult = null;
+        this.recognition.onerror = null;
+        this.recognition.onend = null;
+      };
+
       this.recognition!.onresult = (event) => {
         const result = event.results[0][0].transcript;
+        resolved = true;
         this.isListening = false;
+        cleanup();
         resolve(result);
       };
 
       this.recognition!.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
+        resolved = true;
         this.isListening = false;
+        cleanup();
         resolve('');
       };
 
       this.recognition!.onend = () => {
         this.isListening = false;
+        if (!resolved) {
+          resolved = true;
+          cleanup();
+          resolve('');
+        }
       };
 
       try {
@@ -63,7 +88,8 @@ export class VoiceAssistantService {
       } catch (error) {
         console.error('Failed to start speech recognition:', error);
         this.isListening = false;
-        resolve('');
+        cleanup();
+        if (!resolved) resolve('');
       }
     });
   }
@@ -92,16 +118,20 @@ export class VoiceAssistantService {
 
   parseCommand(text: string): VoiceCommand {
     const lowerText = text.toLowerCase();
-    
+
     // Add food item commands
-    if (lowerText.includes('add') && (lowerText.includes('food') || lowerText.includes('item'))) {
-      const foodMatch = lowerText.match(/add (.+?) to/);
+    if (lowerText.includes('add')) {
+      const foodMatch = lowerText.match(
+        /add\s+(.+?)(?:\s+(?:to|into|in)\s+(?:my\s*)?(?:inventory|list))?(?:[.!?]|\s|$)/
+      );
       const food = foodMatch ? foodMatch[1] : '';
-      return {
-        intent: 'add_food',
-        entities: { food },
-        confidence: 0.8
-      };
+      if (food) {
+        return {
+          intent: 'add_food',
+          entities: { food },
+          confidence: 0.8
+        };
+      }
     }
 
     // Check expiring items
@@ -114,13 +144,15 @@ export class VoiceAssistantService {
     }
 
     // Meal suggestions
-    if (lowerText.includes('meal') && (lowerText.includes('suggest') || lowerText.includes('recommend'))) {
-      const mealType = lowerText.match(/(breakfast|lunch|dinner)/)?.[1] || 'any';
-      return {
-        intent: 'suggest_meal',
-        entities: { mealType },
-        confidence: 0.8
-      };
+    if (lowerText.includes('suggest') || lowerText.includes('recommend')) {
+      if (lowerText.includes('meal') || /(breakfast|lunch|dinner)/.test(lowerText)) {
+        const mealType = lowerText.match(/(breakfast|lunch|dinner)/)?.[1] || 'any';
+        return {
+          intent: 'suggest_meal',
+          entities: { mealType },
+          confidence: 0.8
+        };
+      }
     }
 
     // Grocery list
