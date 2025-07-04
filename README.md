@@ -63,9 +63,31 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## How do I run tests?
+
+Use the integrated terminal in VS Code (or any terminal) and run:
+
+```sh
+npm run test
+```
+
+This executes the Vitest test suite located in the `tests/` folder.
+
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/73dc5af1-4a13-40c7-b6ec-c0c822eb974e) and click on Share -> Publish.
+To create an optimized production build run:
+
+```sh
+npm run build
+```
+
+You can verify the build locally with:
+
+```sh
+npm run preview
+```
+
+To deploy online, open [Lovable](https://lovable.dev/projects/73dc5af1-4a13-40c7-b6ec-c0c822eb974e) and click on **Share → Publish**.
 
 ## Can I connect a custom domain to my Lovable project?
 
