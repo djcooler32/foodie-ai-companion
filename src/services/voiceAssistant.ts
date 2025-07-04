@@ -112,8 +112,13 @@ export class VoiceAssistantService {
     const lowerText = text.toLowerCase();
     
     // Add food item commands
-    if (lowerText.includes('add') && (lowerText.includes('food') || lowerText.includes('item'))) {
-      const foodMatch = lowerText.match(/add (.+?) to/);
+    if (
+      lowerText.includes('add') &&
+      (lowerText.includes('food') ||
+        lowerText.includes('item') ||
+        lowerText.includes('inventory'))
+    ) {
+      const foodMatch = lowerText.match(/add (.+?)(?: to|$)/);
       const food = foodMatch ? foodMatch[1] : '';
       return {
         intent: 'add_food',
@@ -132,7 +137,10 @@ export class VoiceAssistantService {
     }
 
     // Meal suggestions
-    if (lowerText.includes('meal') && (lowerText.includes('suggest') || lowerText.includes('recommend'))) {
+    if (
+      (lowerText.includes('suggest') || lowerText.includes('recommend')) &&
+      (lowerText.includes('meal') || /(breakfast|lunch|dinner)/.test(lowerText))
+    ) {
       const mealType = lowerText.match(/(breakfast|lunch|dinner)/)?.[1] || 'any';
       return {
         intent: 'suggest_meal',
