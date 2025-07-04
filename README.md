@@ -1,4 +1,4 @@
-# Welcome to your Lovable project
+# FoodieAI Companion
 
 ## Project info
 
@@ -20,6 +20,9 @@ If you want to work locally using your own IDE, you can clone this repo and push
 
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
+This project uses **npm** as the package manager. The `bun.lockb` file is leftover
+from a previous experiment and can be ignored.
+
 Follow these steps:
 
 ```sh
@@ -34,6 +37,9 @@ npm i
 
 # Step 4: Start the development server with auto-reloading and an instant preview.
 npm run dev
+
+# Step 5: Run the unit tests.
+npm test
 ```
 
 **Edit a file directly in GitHub**
