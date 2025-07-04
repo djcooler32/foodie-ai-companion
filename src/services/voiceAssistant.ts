@@ -1,5 +1,5 @@
 
-/// <reference path="../types/speech.d.ts" />
+import "../types/speech.d.ts"
 
 export interface VoiceCommand {
   intent: string;
@@ -16,7 +16,8 @@ export class VoiceAssistantService {
     try {
       // Check if Web Speech API is available
       if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRecognitionConstructor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        const SpeechRecognitionConstructor =
+          window.SpeechRecognition ?? window.webkitSpeechRecognition;
         this.recognition = new SpeechRecognitionConstructor();
         this.recognition!.continuous = false;
         this.recognition!.interimResults = false;
