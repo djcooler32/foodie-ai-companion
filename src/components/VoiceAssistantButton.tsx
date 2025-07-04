@@ -57,8 +57,7 @@ const VoiceAssistantButton = ({
           description: "Please try again and speak clearly",
         });
       }
-    } catch (error) {
-      console.error('Voice activation error:', error);
+    } catch {
       toast({
         title: "Voice Error",
         description: "Failed to process voice command",
