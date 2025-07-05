@@ -2,13 +2,10 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.73dc5af14a1340c7b6ecc0c822eb974e',
+  appId: 'com.foodie.aicompanion',
   appName: 'foodie-ai-companion',
   webDir: 'dist',
-  server: {
-    url: 'https://73dc5af1-4a13-40c7-b6ec-c0c822eb974e.lovableproject.com?forceHideBadge=true',
-    cleartext: true
-  },
+  // Server configuration can be added here for development if needed
   plugins: {
     SplashScreen: {
       launchShowDuration: 3000,
