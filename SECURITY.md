@@ -11,5 +11,7 @@ The `VITE_APP_BASE_URL` environment variable can optionally be set to specify th
 - Users should provide consent before enabling analytics.
 - Data collected is subject to GDPR/CCPA regulations.
 - Environment variables are used to configure external services so credentials are not stored in the repository.
+- A strict Content Security Policy and referrer policy are configured in
+  `index.html` to mitigate common web vulnerabilities.
 
 

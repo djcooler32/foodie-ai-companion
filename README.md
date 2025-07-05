@@ -89,3 +89,9 @@ VITE_APP_BASE_URL=<your custom domain>
 ```
 
 The analytics module only records high-level events like voice intent detection and errors. No raw voice data or personal identifiers are stored.
+
+## Security and Compliance
+
+For details on how this project handles data and complies with GDPR/CCPA,
+see [SECURITY.md](SECURITY.md). Credentials for external services are supplied
+via environment variables so they are not checked into source control.
