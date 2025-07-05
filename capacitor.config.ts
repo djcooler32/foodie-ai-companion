@@ -2,11 +2,11 @@
 import { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'app.lovable.73dc5af14a1340c7b6ecc0c822eb974e',
+  appId: 'com.foodieaicompanion.app',
   appName: 'foodie-ai-companion',
   webDir: 'dist',
   server: {
-    url: 'https://73dc5af1-4a13-40c7-b6ec-c0c822eb974e.lovableproject.com?forceHideBadge=true',
+    url: 'http://localhost:8080',
     cleartext: true
   },
   plugins: {

@@ -2,21 +2,15 @@
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/73dc5af1-4a13-40c7-b6ec-c0c822eb974e
+This repository contains the code for a Vite + React application called **FoodieAI Companion**.
 
 ## How can I edit this code?
 
 There are several ways of editing your application.
 
-**Use Lovable**
-
-Simply visit the [Lovable Project](https://lovable.dev/projects/73dc5af1-4a13-40c7-b6ec-c0c822eb974e) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
 **Use your preferred IDE**
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+Clone this repository, make your changes locally, and push them back to your Git remote.
 
 The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
 
@@ -63,14 +57,28 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## How do I run tests?
+
+Use the integrated terminal in VS Code (or any terminal) and run:
+
+```sh
+npm run test
+```
+
+This executes the Vitest test suite located in the `tests/` folder.
+
 ## How can I deploy this project?
 
-Simply open [Lovable](https://lovable.dev/projects/73dc5af1-4a13-40c7-b6ec-c0c822eb974e) and click on Share -> Publish.
+To create an optimized production build run:
 
-## Can I connect a custom domain to my Lovable project?
+```sh
+npm run build
+```
 
-Yes, you can!
+You can verify the build locally with:
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+```sh
+npm run preview
+```
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+Once the build is ready, upload the contents of the `dist/` directory to any static hosting provider or serve them from your own server.
