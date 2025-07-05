@@ -73,4 +73,19 @@ Yes, you can!
 
 To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
 
+If deploying outside of Lovable, set the `VITE_APP_BASE_URL` environment variable to your domain (e.g. `https://example.com`) so the application can generate correct links.
+
 Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+
+## Analytics and Monitoring
+
+The application uses Sentry and PostHog for runtime monitoring and analytics. To enable them, provide the following environment variables in a `.env` file based on `.env.example`:
+
+```
+VITE_SENTRY_DSN=<your Sentry DSN>
+VITE_POSTHOG_KEY=<your PostHog project key>
+VITE_POSTHOG_HOST=<optional PostHog host>
+VITE_APP_BASE_URL=<your custom domain>
+```
+
+The analytics module only records high-level events like voice intent detection and errors. No raw voice data or personal identifiers are stored.

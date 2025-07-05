@@ -1,5 +1,6 @@
 
-/// <reference path="../types/speech.d.ts" />
+import "../types/speech.d.ts"
+import { trackEvent } from '../lib/analytics'
 
 export interface VoiceCommand {
   intent: string;
@@ -16,8 +17,18 @@ export class VoiceAssistantService {
     try {
       // Check if Web Speech API is available
       if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-        const SpeechRecognitionConstructor = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-        this.recognition = new SpeechRecognitionConstructor();
+        const SpeechRecognitionConstructor =
+          (window as Window & {
+            SpeechRecognition?: new () => SpeechRecognition
+            webkitSpeechRecognition?: new () => SpeechRecognition
+          }).SpeechRecognition ??
+          (window as Window & {
+            SpeechRecognition?: new () => SpeechRecognition
+            webkitSpeechRecognition?: new () => SpeechRecognition
+          }).webkitSpeechRecognition;
+        if (SpeechRecognitionConstructor) {
+          this.recognition = new SpeechRecognitionConstructor();
+        }
         this.recognition!.continuous = false;
         this.recognition!.interimResults = false;
         this.recognition!.lang = 'en-US';
@@ -52,6 +63,7 @@ export class VoiceAssistantService {
 
       this.recognition!.onresult = (event) => {
         const result = event.results[0][0].transcript;
+        trackEvent('voice_recognized')
         resolved = true;
         this.isListening = false;
         cleanup();
@@ -60,6 +72,7 @@ export class VoiceAssistantService {
 
       this.recognition!.onerror = (event) => {
         console.error('Speech recognition error:', event.error);
+        trackEvent('voice_error', { error: event.error })
         resolved = true;
         this.isListening = false;
         cleanup();
@@ -68,6 +81,7 @@ export class VoiceAssistantService {
 
       this.recognition!.onend = () => {
         this.isListening = false;
+        trackEvent('voice_end')
         if (!resolved) {
           resolved = true;
           cleanup();
@@ -95,14 +109,15 @@ export class VoiceAssistantService {
     try {
       // Cancel any ongoing speech
       this.synthesis.cancel();
-      
+
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.lang = 'en-US';
       utterance.rate = 1.0;
       utterance.pitch = 1.0;
       utterance.volume = 1.0;
-      
+
       this.synthesis.speak(utterance);
+      trackEvent('voice_speak')
     } catch (error) {
       console.error('Text to speech error:', error);
     }
@@ -120,6 +135,7 @@ export class VoiceAssistantService {
     ) {
       const foodMatch = lowerText.match(/add (.+?)(?: to|$)/);
       const food = foodMatch ? foodMatch[1] : '';
+      trackEvent('voice_intent', { intent: 'add_food' })
       return {
         intent: 'add_food',
         entities: { food },
@@ -129,6 +145,7 @@ export class VoiceAssistantService {
 
     // Check expiring items
     if (lowerText.includes('expiring') || lowerText.includes('expire')) {
+      trackEvent('voice_intent', { intent: 'check_expiring' })
       return {
         intent: 'check_expiring',
         entities: {},
@@ -142,6 +159,7 @@ export class VoiceAssistantService {
       (lowerText.includes('meal') || /(breakfast|lunch|dinner)/.test(lowerText))
     ) {
       const mealType = lowerText.match(/(breakfast|lunch|dinner)/)?.[1] || 'any';
+      trackEvent('voice_intent', { intent: 'suggest_meal' })
       return {
         intent: 'suggest_meal',
         entities: { mealType },
@@ -151,6 +169,7 @@ export class VoiceAssistantService {
 
     // Grocery list
     if (lowerText.includes('grocery') && lowerText.includes('list')) {
+      trackEvent('voice_intent', { intent: 'grocery_list' })
       return {
         intent: 'grocery_list',
         entities: {},
@@ -158,6 +177,7 @@ export class VoiceAssistantService {
       };
     }
 
+    trackEvent('voice_intent', { intent: 'unknown' })
     return {
       intent: 'unknown',
       entities: {},
